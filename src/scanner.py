@@ -1,12 +1,24 @@
 import pandas as pd
 import os
+import datetime
 
-def process_scan(coupon_id):
+def process_scan(qr_data):
     """
     Processes a scanned QR code (coupon_id) and updates the coupon status.
-    :param coupon_id: The unique ID string from the QR code.
+    :param qr_data(str): The unique ID string from the QR code, e.g., "UUID|YYYY-MM-DD".
     :return:
     """
+
+    try:
+        coupon_id, coupon_date_str = qr_data.split('|')
+        scan_date = datetime.date.today().strftime('%Y-%m-%d')
+    except ValueError:
+        print("🔴 Invalid QR Code format. Please scan a valid festival QR.")
+        return
+
+    if scan_date != coupon_date_str:
+        print(f"❌ This coupon is not valid for today, {scan_date}. It is for {coupon_date_str}.")
+        return
 
     data_dir = os.path.join(os.path.dirname(__file__), '..', 'data')
     coupons_file = os.path.join(data_dir, 'coupons.csv')
@@ -58,7 +70,7 @@ def main_scanner_interface():
     print("Welcome to the Food Coupon Scanner.")
     print("Enter 'exit' to exit.")
     while True:
-        scanned_id = input("Enter coupon Id (from QR code): ")
+        scanned_id = input("Enter QR code data (e.g.,UUID|YYYY-MM-DD): ")
         if scanned_id.lower() == 'exit':
             break
         process_scan(scanned_id)
